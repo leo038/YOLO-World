@@ -16,7 +16,7 @@ weight_decay = 0.05
 train_batch_size_per_gpu = 16
 load_from = 'pretrained_models/yolo_world_l_clip_t2i_bn_2e-3adamw_32xb16-100e_obj365v1_goldg_cc3mlite_train-ca93cd1f.pth'
 persistent_workers = False
-text_model_name = '../pretrained_models/open-ai-clip-vit-base-patch32'
+text_model_name = 'openai/open-ai-clip-vit-base-patch32'
 img_scale = (800, 800)
 
 # model settings

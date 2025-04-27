@@ -1,18 +1,17 @@
 # Copyright (c) Tencent Inc. All rights reserved.
-import os
-import cv2
 import argparse
+import os
 import os.path as osp
 
+import cv2
+import supervision as sv
 import torch
-from mmengine.config import Config, DictAction
-from mmengine.runner.amp import autocast
-from mmengine.dataset import Compose
-from mmengine.utils import ProgressBar
 from mmdet.apis import init_detector
 from mmdet.utils import get_test_pipeline_cfg
-
-import supervision as sv
+from mmengine.config import Config, DictAction
+from mmengine.dataset import Compose
+from mmengine.runner.amp import autocast
+from mmengine.utils import ProgressBar
 
 BOUNDING_BOX_ANNOTATOR = sv.BoundingBoxAnnotator(thickness=1)
 MASK_ANNOTATOR = sv.MaskAnnotator()
@@ -22,9 +21,9 @@ class LabelAnnotator(sv.LabelAnnotator):
 
     @staticmethod
     def resolve_text_background_xyxy(
-        center_coordinates,
-        text_wh,
-        position,
+            center_coordinates,
+            text_wh,
+            position,
     ):
         center_x, center_y = center_coordinates
         text_w, text_h = text_wh
@@ -38,13 +37,20 @@ LABEL_ANNOTATOR = LabelAnnotator(text_padding=4,
 
 def parse_args():
     parser = argparse.ArgumentParser(description='YOLO-World Demo')
-    parser.add_argument('config', help='test config file path')
-    parser.add_argument('checkpoint', help='checkpoint file')
-    parser.add_argument('image', help='image path, include image file or dir.')
+    parser.add_argument('--config',
+                        default='../configs/pretrain/yolo_world_v2_x_vlpan_bn_2e-3_100e_4x8gpus_obj365v1_goldg_train_lvis_minival.py',
+                        help='test config file path')
+    parser.add_argument('--checkpoint', default='../checkpoints/yolo_world_v2_x_obj365v1_goldg_cc3mlite_pretrain_1280ft-14996a36.pth', help='checkpoint file')
+    parser.add_argument('--image', default='/data/joyiot/leo/datasets/cam_data_own/color_2294.jpg',
+                        help='image path, include image file or dir.')
     parser.add_argument(
-        'text',
-        help=
-        'text prompts, including categories separated by a comma or a txt file with each line as a prompt.'
+        '--text',
+        default="person, desk, sofa, chair,monitor,  lamp, plant, door,cup, bottle, window, mouse, keyboard, cabinet, "
+                "bin, latch,drawer, flag, handbag, box, pillow,flowerpot, picture, trophy, speaker, shelf, monitor, arm, "
+                "flower,blackboard,sign,mirror,trolley,book,router,text,toy,couch,fan,table, refrigerator, light, camera, "
+                "telephone,power outlet, carpet, curtain, hinge,glasses,shoes",
+    help =
+    'text prompts, including categories separated by a comma or a txt file with each line as a prompt.'
     )
     parser.add_argument('--topk',
                         default=100,
@@ -75,11 +81,11 @@ def parse_args():
         nargs='+',
         action=DictAction,
         help='override some settings in the used config, the key-value pair '
-        'in xxx=yyy format will be merged into config file. If the value to '
-        'be overwritten is a list, it should be like key="[a,b]" or key=a,b '
-        'It also allows nested list/tuple values, e.g. key="[(a,b),(c,d)]" '
-        'Note that the quotation marks are necessary and that no white space '
-        'is allowed.')
+             'in xxx=yyy format will be merged into config file. If the value to '
+             'be overwritten is a list, it should be like key="[a,b]" or key=a,b '
+             'It also allows nested list/tuple values, e.g. key="[(a,b),(c,d)]" '
+             'Note that the quotation marks are necessary and that no white space '
+             'is allowed.')
     args = parser.parse_args()
     return args
 
@@ -151,10 +157,10 @@ def inference_detector(model,
         sv.DetectionDataset(
             classes=texts, images=images_dict,
             annotations=annotations_dict).as_yolo(
-                annotations_directory_path=ANNOTATIONS_DIRECTORY,
-                min_image_area_percentage=MIN_IMAGE_AREA_PERCENTAGE,
-                max_image_area_percentage=MAX_IMAGE_AREA_PERCENTAGE,
-                approximation_percentage=APPROXIMATION_PERCENTAGE)
+            annotations_directory_path=ANNOTATIONS_DIRECTORY,
+            min_image_area_percentage=MIN_IMAGE_AREA_PERCENTAGE,
+            max_image_area_percentage=MAX_IMAGE_AREA_PERCENTAGE,
+            approximation_percentage=APPROXIMATION_PERCENTAGE)
 
     if show:
         cv2.imshow('Image', image)  # Provide window name
